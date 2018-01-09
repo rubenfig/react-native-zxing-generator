@@ -1,5 +1,8 @@
 {
   "name": "Zxing",
   "version": "0.0.1",
-  "keywords": "react-native"
+  "keywords": "react-native",
+  "dependencies": {
+    "prop-types": "^15.6.0"
+  }
 }
