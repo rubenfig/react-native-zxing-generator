@@ -12,7 +12,7 @@ A react native component to generate barcode.
 * Add node_modules/Zxing/ios/Zxing.xcodeproj/project.pbxproj to Libraries
 * Add node_modules/Zxing/ios/Carthage/Build/iOS/ZXingObjC.framework to frameworks
 * In Build Phases -> Link Binary With Libraries, Link the libZxing.a available in Libraries/Zxing.xcodeproj/Products folder
-* In Build Settings -> Search Paths -> Framework Search Paths, add `$(SRCROOT)/../node_modules/Zxing/ios/Carthage` with recursive option
+* In Build Settings -> Search Paths -> Framework Search Paths, add `$(SRCROOT)/../node_modules/react-native-zxing/ios/Carthage` with recursive option
 * On Project target -> General -> Embedded Binaries, Add ZXingObjC.framework
     
 ### Android manual setup
