@@ -31,6 +31,8 @@ dependencies {
 * Add ZxingPackage to react native package
 
 ```
+import com.hariharanweb.xzing.ZxingPackage;
+
 protected List<ReactPackage> getPackages() {
     return Arrays.<ReactPackage>asList(
         ...
