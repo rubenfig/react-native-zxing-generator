@@ -88,15 +88,14 @@ public class ZxingViewManager extends SimpleViewManager<ImageView> {
             return null;
         }
         Map<EncodeHintType, Object> hints = null;
-        String encoding = guessAppropriateEncoding(contentsToEncode);
-        if (encoding != null) {
-            hints = new EnumMap<EncodeHintType, Object>(EncodeHintType.class);
-            hints.put(EncodeHintType.CHARACTER_SET, encoding);
-        }
+
+        hints = new EnumMap<EncodeHintType, Object>(EncodeHintType.class);
+        hints.put(EncodeHintType.MARGIN, 0);
+
         MultiFormatWriter writer = new MultiFormatWriter();
         BitMatrix result;
         try {
-            result = writer.encode(contentsToEncode, format, img_width, img_height, hints);
+            result = writer.encode(contentsToEncode, format, img_width * 10, img_height * 10, hints);
         } catch (IllegalArgumentException iae) {
             throw new Exception("Unsupported barcode format");
         }
