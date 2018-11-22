@@ -18,13 +18,13 @@ A react native component to generate barcode.
 ### Android manual setup
 * Open settings.gradle in the android application and reference to Zxing node module as shown below
 ```
-include ':rnzxing'
-project(':rnzxing').projectDir = new File(rootProject.projectDir, '../node_modules/Zxing/android')
+include ':react-native-zxing'
+project(':react-native-zxing').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-zxing/android')
 ``` 
-* Add ZXing and rnzxing to dependecies in build.gradle of the app
+* Add ZXing and react-native-zxing to dependecies in build.gradle of the app
 ```
 dependencies {
-    compile project(':rnzxing')
+    compile project(':react-native-zxing')
     // https://mvnrepository.com/artifact/com.google.zxing/core
     compile group: 'com.google.zxing', name: 'core', version: '3.3.0'
 ```
