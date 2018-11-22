@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = 'ZXingObjC'
-  s.version = '3.2.0'
+  s.version = '3.5.0'
   s.summary = 'An Objective-C Port of the ZXing barcode framework.'
   s.homepage = 'https://github.com/TheLevelUp/ZXingObjC'
   s.author = 'ZXingObjC team'
@@ -23,6 +23,7 @@ Pod::Spec.new do |s|
 
   s.subspec 'Core' do |ss|
     ss.source_files = 'ZXingObjC/*.{h,m}', 'ZXingObjC/client/*.{h,m}', 'ZXingObjC/common/**/*.{h,m}', 'ZXingObjC/core/**/*.{h,m}', 'ZXingObjC/multi/**/*.{h,m}'
+    ss.xcconfig = { "GCC_PREPROCESSOR_DEFINITIONS" => "ZXINGOBJC_USE_SUBSPECS" }
   end
 
   s.subspec 'Aztec' do |ss|
