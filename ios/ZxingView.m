@@ -9,8 +9,8 @@
     NSDictionary *_supportedBarCodeFormats;
     
     NSString *_text;
-    int *_width;
-    int *_height;
+    CGFloat _width;
+    CGFloat _height;
 }
 
 - (instancetype)init
@@ -60,18 +60,22 @@
 }
 
 
--(void)setWidth:(int *)width
+-(void)setWidth:(CGFloat)width
 {
     NSLog(@"setWidth %d", width);
     _width = width;
     [self removeImage];
 }
 
--(void)setHeight:(int *)height
+-(void)setHeight:(CGFloat)height
 {
     NSLog(@"setHeight %d", height);
     _height = height;
     [self removeImage];
+}
+
+- (void)setOnRenderError:(RCTBubblingEventBlock)onRenderError {
+    _onRenderError = onRenderError;
 }
 
 -(void) removeImage
@@ -86,20 +90,35 @@
     NSLog(@"In layoutSubviews");
     [super layoutSubviews];
     NSError *zebraError = nil;
-    ZXEncodeHints *hints = [ZXEncodeHints hints];
-    hints.encoding = NSUTF8StringEncoding;
+    ZXEncodeHints *hints = [ZXEncodeHints new];
+    hints.margin = [NSNumber numberWithInteger:0];
+
     ZXMultiFormatWriter *writer = [ZXMultiFormatWriter writer];
     UIColor *onUIColor = [UIColor colorWithWhite:0.0 alpha:1.0];
     UIColor *offUIColor = [UIColor colorWithWhite:1.0 alpha:1.0];
-    
-    ZXBitMatrix *bitMatrix = [writer encode:_text format:_barCodeFormat width:_width height:_height hints:hints error:&zebraError];
-    ZXImage *zebraImage = [ZXImage imageWithMatrix:bitMatrix onColor:onUIColor.CGColor offColor:offUIColor.CGColor];
-    UIImage *image = [UIImage imageWithCGImage:zebraImage.cgimage];
-    
-    _image = [[UIImageView alloc] init];
-    [_image setImage:image];
-    _image.frame = self.bounds;
-    
-    [self insertSubview:_image atIndex:0];
+
+    @try {
+
+        ZXBitMatrix *bitMatrix = [
+            writer encode:_text
+            format:_barCodeFormat
+            width:_width * (_width == _height ? 2 : 2.7)
+            height:_height * (_width == _height ? 2 : 1)
+            hints:hints
+            error:&zebraError
+        ];
+        ZXImage *zebraImage = [ZXImage imageWithMatrix:bitMatrix onColor:onUIColor.CGColor offColor:offUIColor.CGColor];
+        UIImage *image = [UIImage imageWithCGImage:zebraImage.cgimage];
+
+        _image = [[UIImageView alloc] init];
+        [_image setImage:image];
+        _image.frame = self.bounds;
+        
+        [self insertSubview:_image atIndex:0];
+    }
+    @catch (NSException * e) {
+        NSLog(@"Exception: %@", e);
+        if (_onRenderError) _onRenderError(@{});
+    }
 }
 @end
