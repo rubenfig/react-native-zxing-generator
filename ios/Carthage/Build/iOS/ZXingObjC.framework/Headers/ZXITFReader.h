@@ -16,6 +16,8 @@
 
 #import "ZXOneDReader.h"
 
+extern const int ZX_ITF_PATTERNS[][5];
+
 /**
  * Implements decoding of the ITF format, or Interleaved Two of Five.
  *

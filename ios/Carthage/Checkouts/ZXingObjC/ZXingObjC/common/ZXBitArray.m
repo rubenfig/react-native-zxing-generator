@@ -74,15 +74,9 @@
 - (void)ensureCapacity:(int)size {
   if (size > self.bitsLength * 32) {
     int newBitsLength = (size + 31) / 32;
+    self.bits = realloc(self.bits, newBitsLength * sizeof(int32_t));
+    memset(self.bits + self.bitsLength, 0, (newBitsLength - self.bitsLength) * sizeof(int32_t));
 
-    // basically realloc
-    int32_t *newBits = (int32_t *)malloc(newBitsLength * sizeof(int32_t));
-    memcpy(newBits, self.bits, self.bitsLength * sizeof(int32_t));
-    memset(newBits + self.bitsLength, 0, (newBitsLength - self.bitsLength) * sizeof(int32_t));
-    free(self.bits);
-    self.bits = NULL;
-
-    self.bits = newBits;
     self.bitsLength = newBitsLength;
   }
 }
@@ -140,7 +134,7 @@
 }
 
 - (void)setRange:(int)start end:(int)end {
-  if (end < start || start < 0 || end > self.size) {
+  if (end < start) {
     @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Start greater than end" userInfo:nil];
   }
   if (end == start) {
@@ -152,8 +146,18 @@
   for (int i = firstInt; i <= lastInt; i++) {
     int firstBit = i > firstInt ? 0 : start & 0x1F;
     int lastBit = i < lastInt ? 31 : end & 0x1F;
-    // Ones from firstBit to lastBit, inclusive
-    int32_t mask = (2 << lastBit) - (1 << firstBit);
+    int32_t mask;
+    if (lastBit > 31) {
+        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Bit-shift operand does not support more than 31 bits" userInfo:nil];
+    }
+    if (firstBit == 0 && lastBit == 31) {
+      mask = -1;
+    } else {
+      mask = 0;
+      for (int j = firstBit; j <= lastBit; j++) {
+        mask |= 1 << j;
+      }
+    }
     _bits[i] |= mask;
   }
 }
@@ -163,7 +167,7 @@
 }
 
 - (BOOL)isRange:(int)start end:(int)end value:(BOOL)value {
-  if (end < start || start < 0 || end > self.size) {
+  if (end < start) {
     @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Start greater than end" userInfo:nil];
   }
   if (end == start) {
@@ -175,8 +179,18 @@
   for (int i = firstInt; i <= lastInt; i++) {
     int firstBit = i > firstInt ? 0 : start & 0x1F;
     int lastBit = i < lastInt ? 31 : end & 0x1F;
-    // Ones from firstBit to lastBit, inclusive
-    int32_t mask = (2 << lastBit) - (1 << firstBit);
+    int32_t mask;
+    if (lastBit > 31) {
+        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Bit-shift operand does not support more than 31 bits" userInfo:nil];
+    }
+    if (firstBit == 0 && lastBit == 31) {
+      mask = -1;
+    } else {
+      mask = 0;
+      for (int j = firstBit; j <= lastBit; j++) {
+        mask |= 1 << j;
+      }
+    }
 
     // Return false if we're looking for 1s and the masked bits[i] isn't all 1s (that is,
     // equals the mask, or we're looking for 0s and the masked portion is not all 0s
@@ -218,14 +232,14 @@
 }
 
 - (void)xor:(ZXBitArray *)other {
-  if (self.size != other.size) {
+  if (self.bitsLength != other.bitsLength) {
     @throw [NSException exceptionWithName:NSInvalidArgumentException
                                    reason:@"Sizes don't match"
                                  userInfo:nil];
   }
 
   for (int i = 0; i < self.bitsLength; i++) {
-    // The last int could be incomplete (i.e. not have 32 bits in
+    // The last byte could be incomplete (i.e. not have 8 bits in
     // it) but there is no problem since 0 XOR 0 == 0.
     self.bits[i] ^= other.bits[i];
   }
@@ -255,27 +269,11 @@
     return NO;
   }
   ZXBitArray *other = (ZXBitArray *)o;
-  if (self.size != other.size) {
-    return NO;
-  }
-  for (int i = 0; i < self.bitsLength; i++) {
-    if (self.bits[i] != other.bits[i]) {
-      return NO;
-    }
-  }
-  return YES;
+  return self.size == other.size && memcmp(self.bits, other.bits, self.bitsLength) != 0;
 }
 
 - (NSUInteger)hash {
-  if (self.bitsLength == 0) {
-    return 31 * self.size;
-  }
-  
-  NSUInteger bitsHash = 1;
-  for (int i = 0; i < self.bitsLength; i++) {
-    bitsHash = 31 * bitsHash + self.bits[i];
-  }
-  return 31 * self.size + bitsHash;
+  return 31 * self.size;
 }
 
 - (void)reverse {

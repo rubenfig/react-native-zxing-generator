@@ -17,8 +17,6 @@
 #import "ZXBitMatrix.h"
 #import "ZXQRCodeDataMask.h"
 
-// See ISO 18004:2006 6.8.1
-
 /**
  * 000: mask bits for which (x + y) mod 2 == 0
  */
@@ -101,7 +99,6 @@
 
 /**
  * 101: mask bits for which xy mod 2 + xy mod 3 == 0
- * equivalently, such that xy mod 6 == 0
  */
 @interface ZXDataMask101 : ZXQRCodeDataMask
 
@@ -110,7 +107,8 @@
 @implementation ZXDataMask101
 
 - (BOOL)isMasked:(int)i j:(int)j {
-  return (i * j) % 6 == 0;
+  int temp = i * j;
+  return (temp & 0x01) + (temp % 3) == 0;
 }
 
 @end
@@ -118,7 +116,6 @@
 
 /**
  * 110: mask bits for which (xy mod 2 + xy mod 3) mod 2 == 0
- * equivalently, such that xy mod 6 < 3
  */
 @interface ZXDataMask110 : ZXQRCodeDataMask
 
@@ -127,7 +124,8 @@
 @implementation ZXDataMask110
 
 - (BOOL)isMasked:(int)i j:(int)j {
-  return ((i * j) % 6) < 3;
+  int temp = i * j;
+  return (((temp & 0x01) + (temp % 3)) & 0x01) == 0;
 }
 
 @end
@@ -135,7 +133,6 @@
 
 /**
  * 111: mask bits for which ((x+y)mod 2 + xy mod 3) mod 2 == 0
- * equivalently, such that (x + y + xy mod 3) mod 2 == 0
  */
 @interface ZXDataMask111 : ZXQRCodeDataMask
 
@@ -144,7 +141,7 @@
 @implementation ZXDataMask111
 
 - (BOOL)isMasked:(int)i j:(int)j {
-  return ((i + j + ((i * j) % 3)) & 0x01) == 0;
+  return ((((i + j) & 0x01) + ((i * j) % 3)) & 0x01) == 0;
 }
 
 @end

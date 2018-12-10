@@ -20,6 +20,5 @@
 @property (nonatomic, assign, readonly) unsigned int length;
 
 - (id)initWithLength:(unsigned int)length;
-- (id)initWithLength:(unsigned int)length values:(int)value1, ...;
 
 @end

@@ -271,8 +271,8 @@
     }
   }
 
-  NSInteger width = right - left + 1;
-  NSInteger height = bottom - top + 1;
+  NSInteger width = right - left;
+  NSInteger height = bottom - top;
 
   if (width < 0 || height < 0) {
     return nil;
@@ -347,7 +347,6 @@
   return hash;
 }
 
-// string representation using "X" for set and " " for unset bits
 - (NSString *)description {
   return [self descriptionWithSetString:@"X " unsetString:@"  "];
 }

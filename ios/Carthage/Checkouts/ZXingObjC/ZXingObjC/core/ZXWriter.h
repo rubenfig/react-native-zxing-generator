@@ -30,8 +30,6 @@
  * @param format The barcode format to generate
  * @param width The preferred width in pixels
  * @param height The preferred height in pixels
- * @return ZXBitMatrix representing encoded barcode image or nil if contents cannot be encoded
- *   legally in a format
  */
 - (ZXBitMatrix *)encode:(NSString *)contents format:(ZXBarcodeFormat)format width:(int)width height:(int)height error:(NSError **)error;
 
@@ -42,8 +40,6 @@
  * @param width The preferred width in pixels
  * @param height The preferred height in pixels
  * @param hints Additional parameters to supply to the encoder
- * @return ZXBitMatrix representing encoded barcode image or nil if contents cannot be encoded
- *   legally in a format
  */
 - (ZXBitMatrix *)encode:(NSString *)contents format:(ZXBarcodeFormat)format width:(int)width height:(int)height hints:(ZXEncodeHints *)hints error:(NSError **)error;
 

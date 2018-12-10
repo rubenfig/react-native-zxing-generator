@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-#import "ZXPDF417ResultMetadata.h"
-
 @class ZXDecoderResult, ZXIntArray;
 
 /**
@@ -24,6 +22,5 @@
 @interface ZXPDF417DecodedBitStreamParser : NSObject
 
 + (ZXDecoderResult *)decode:(ZXIntArray *)codewords ecLevel:(NSString *)ecLevel error:(NSError **)error;
-+ (int)decodeMacroBlock:(ZXIntArray *)codewords codeIndex:(int)codeIndex resultMetadata:(ZXPDF417ResultMetadata *)resultMetadata;
 
 @end

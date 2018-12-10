@@ -247,17 +247,11 @@
   *misread = NO;
 
   ZXDecodeHints *hints = [ZXDecodeHints hints];
-  ZXDecodeHints *pureHints = [ZXDecodeHints hints];
-  pureHints.pureBarcode = YES;
   if (tryHarder) {
     hints.tryHarder = YES;
-    pureHints.tryHarder = YES;
   }
 
-  ZXResult *result = [self.barcodeReader decode:source hints:pureHints error:nil];
-  if (!result) {
-    result = [self.barcodeReader decode:source hints:hints error:nil];
-  }
+  ZXResult *result = [self.barcodeReader decode:source hints:hints error:nil];
   if (!result) {
     return NO;
   }

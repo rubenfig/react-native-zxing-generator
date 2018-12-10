@@ -49,7 +49,6 @@
 #import "ZXUPCEANReader.h"
 #import "ZXUPCEANWriter.h"
 #import "ZXUPCEReader.h"
-#import "ZXUPCEWriter.h"
 
 // Result Parsers
 

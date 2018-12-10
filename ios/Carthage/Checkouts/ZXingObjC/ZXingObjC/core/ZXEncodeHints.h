@@ -73,12 +73,6 @@ typedef enum {
 @property (nonatomic, strong) ZXQRCodeErrorCorrectionLevel *errorCorrectionLevel;
 
 /**
- * Specifies what degree of error correction to use, for example in PDF417 Codes.
- * For PDF417 valid values are 0 to 8.
- */
-@property (nonatomic, strong) NSNumber *errorCorrectionLevelPDF417;
-
-/**
  * Specifies what percent of error correction to use.
  * For Aztec it represents the minimal percentage of error correction words.
  * Note: an Aztec symbol should have a minimum of 25% EC words.
@@ -114,16 +108,5 @@ typedef enum {
  *   a positive number (1, 2, .. 32) specifies a normaol (non-compact) Aztec code
  */
 @property (nonatomic, strong) NSNumber *aztecLayers;
-
-/**
- * Specifies the exact version of QR code to be encoded. An integer. If the data specified
- * cannot fit within the required version, nil we be returned.
- */
-@property (nonatomic, strong) NSNumber *qrVersion;
-
-/**
- * Specifies whether the data should be encoded to the GS1 standard.
- */
-@property (nonatomic, assign) BOOL gs1Format;
 
 @end

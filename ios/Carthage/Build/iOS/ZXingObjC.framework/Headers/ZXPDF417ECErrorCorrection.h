@@ -25,10 +25,7 @@
 @interface ZXPDF417ECErrorCorrection : NSObject
 
 /**
- * @param received received codewords
- * @param numECCodewords number of those codewords used for EC
- * @param erasures location of erasures
- * @return number of errors or nil if errors cannot be corrected, maybe because of too many errors
+ * @return number of errors
  */
 - (int)decode:(ZXIntArray *)received numECCodewords:(int)numECCodewords erasures:(ZXIntArray *)erasures;
 

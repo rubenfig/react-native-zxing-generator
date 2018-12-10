@@ -38,9 +38,7 @@
 /**
  * Detects an Aztec Code in an image.
  *
- * @param isMirror if true, image is a mirror-image of original
- * @return ZXAztecDetectorResult encapsulating results of detecting an Aztec Code, or nil if no
- *   Aztec Code can be found
+ * @return ZXAztecDetectorResult encapsulating results of detecting an Aztec Code, or nil if no Aztec Code can be found
  */
 - (ZXAztecDetectorResult *)detectWithMirror:(BOOL)isMirror error:(NSError **)error;
 

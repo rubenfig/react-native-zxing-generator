@@ -40,7 +40,8 @@
   }
 
   if (width < 0 || height < 0) {
-    [NSException raise:NSInvalidArgumentException format:@"Requested dimensions cannot be negative: %dx%d", width, height];
+    [NSException raise:NSInvalidArgumentException
+                format:@"Requested dimensions are too small: %dx%d", width, height];
   }
 
   // Try to get force shape & min / max size
@@ -140,36 +141,24 @@
 /**
  * Convert the ZXByteMatrix to ZXBitMatrix.
  *
- * @param matrix The input matrix.
- * @param width The requested width of the image (in pixels) with the Datamatrix code
- * @param height The requested height of the image (in pixels) with the Datamatrix code
+ * @param input The input matrix.
  * @return The output matrix.
  */
-- (ZXBitMatrix *)convertByteMatrixToBitMatrix:(ZXByteMatrix *)matrix width:(int)width height:(int)height {
-  int matrixWidth = matrix.width;
-  int matrixHeight = matrix.height;
-  int outputWidth = MAX(width, matrixWidth);
-  int outputHeight = MAX(height, matrixHeight);
+- (ZXBitMatrix *)convertByteMatrixToBitMatrix:(ZXByteMatrix *)input width:(int)width height:(int)height {
+  int inputWidth = input.width;
+  int inputHeight = input.height;
+  int outputWidth = MAX(width, inputWidth);
+  int outputHeight = MAX(height, inputHeight);
 
-  int multiple = MIN(outputWidth / matrixWidth, outputHeight / matrixHeight);
+  int multiple = MIN(outputWidth / inputWidth, outputHeight / inputHeight);
+  int leftPadding = (outputWidth - (inputWidth * multiple)) / 2;
+  int topPadding = (outputHeight - (inputHeight * multiple)) / 2;
 
-  int leftPadding = (outputWidth - (matrixWidth * multiple)) / 2;
-  int topPadding = (outputHeight - (matrixHeight * multiple)) / 2;
+  ZXBitMatrix *output = [[ZXBitMatrix alloc] initWithWidth:outputWidth height:outputHeight];
 
-  ZXBitMatrix *output;
-
-  // remove padding if requested width and height are too small
-  if (height < matrixHeight || width < matrixWidth) {
-    leftPadding = 0;
-    topPadding = 0;
-    output = [[ZXBitMatrix alloc] initWithWidth:matrixWidth height:matrixHeight];
-  } else {
-    output = [[ZXBitMatrix alloc] initWithWidth:width height:height];
-  }
-
-  for (int inputY = 0, outputY = topPadding; inputY < matrixHeight; inputY++, outputY += multiple) {
-    for (int inputX = 0, outputX = leftPadding; inputX < matrixWidth; inputX++, outputX += multiple) {
-      if ([matrix getX:inputX y:inputY] == 1) {
+  for (int inputY = 0, outputY = topPadding; inputY < inputHeight; inputY++, outputY += multiple) {
+    for (int inputX = 0, outputX = leftPadding; inputX < inputWidth; inputX++, outputX += multiple) {
+      if ([input getX:inputX y:inputY] == 1) {
         [output setRegionAtLeft:outputX top:outputY width:multiple height:multiple];
       }
     }

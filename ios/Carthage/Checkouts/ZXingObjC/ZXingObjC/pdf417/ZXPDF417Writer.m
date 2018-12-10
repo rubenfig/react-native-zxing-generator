@@ -27,12 +27,6 @@
  */
 const int ZX_PDF417_WHITE_SPACE = 30;
 
-/**
- * default error correction level
- */
-const int ZX_PDF417_DEFAULT_ERROR_CORRECTION_LEVEL = 2;
-
-
 @implementation ZXPDF417Writer
 
 - (ZXBitMatrix *)encode:(NSString *)contents format:(ZXBarcodeFormat)format width:(int)width height:(int)height
@@ -43,7 +37,6 @@ const int ZX_PDF417_DEFAULT_ERROR_CORRECTION_LEVEL = 2;
 
   ZXPDF417 *encoder = [[ZXPDF417 alloc] init];
   int margin = ZX_PDF417_WHITE_SPACE;
-  int errorCorrectionLevel = ZX_PDF417_DEFAULT_ERROR_CORRECTION_LEVEL;
 
   if (hints != nil) {
     encoder.compact = hints.pdf417Compact;
@@ -58,15 +51,12 @@ const int ZX_PDF417_DEFAULT_ERROR_CORRECTION_LEVEL = 2;
     if (hints.margin) {
       margin = [hints.margin intValue];
     }
-    if (hints.errorCorrectionLevelPDF417) {
-      errorCorrectionLevel = hints.errorCorrectionLevelPDF417.intValue;
-    }
     if (hints.encoding > 0) {
       encoder.encoding = hints.encoding;
     }
   }
 
-  return [self bitMatrixFromEncoder:encoder contents:contents errorCorrectionLevel:errorCorrectionLevel width:width height:height margin:margin error:error];
+  return [self bitMatrixFromEncoder:encoder contents:contents width:width height:height margin:margin error:error];
 }
 
 - (ZXBitMatrix *)encode:(NSString *)contents format:(ZXBarcodeFormat)format width:(int)width height:(int)height error:(NSError **)error {
@@ -78,17 +68,18 @@ const int ZX_PDF417_DEFAULT_ERROR_CORRECTION_LEVEL = 2;
  */
 - (ZXBitMatrix *)bitMatrixFromEncoder:(ZXPDF417 *)encoder
                              contents:(NSString *)contents
-                 errorCorrectionLevel:(int)errorCorrectionLevel
                                 width:(int)width
                                height:(int)height
                                margin:(int)margin
                                 error:(NSError **)error {
+  int errorCorrectionLevel = 2;
   if (![encoder generateBarcodeLogic:contents errorCorrectionLevel:errorCorrectionLevel error:error]) {
     return nil;
   }
 
+  int lineThickness = 2;
   int aspectRatio = 4;
-  NSArray *originalScale = [[encoder barcodeMatrix] scaledMatrixWithXScale:1 yScale:aspectRatio];
+  NSArray *originalScale = [[encoder barcodeMatrix] scaledMatrixWithXScale:lineThickness yScale:aspectRatio * lineThickness];
   BOOL rotated = NO;
   if ((height > width) ^ ([(ZXByteArray *)originalScale[0] length] < [originalScale count])) {
     originalScale = [self rotateArray:originalScale];
@@ -106,13 +97,14 @@ const int ZX_PDF417_DEFAULT_ERROR_CORRECTION_LEVEL = 2;
   }
 
   if (scale > 1) {
-    NSArray *scaledMatrix = [[encoder barcodeMatrix] scaledMatrixWithXScale:scale yScale:scale * aspectRatio];
+    NSArray *scaledMatrix =
+      [[encoder barcodeMatrix] scaledMatrixWithXScale:scale * lineThickness yScale:scale * aspectRatio * lineThickness];
     if (rotated) {
       scaledMatrix = [self rotateArray:scaledMatrix];
     }
-    return [self bitMatrixFromBitArray:scaledMatrix margin:margin];
+    return [self bitMatrixFrombitArray:scaledMatrix margin:margin];
   }
-  return [self bitMatrixFromBitArray:originalScale margin:margin];
+  return [self bitMatrixFrombitArray:originalScale margin:margin];
 }
 
 /**
@@ -122,13 +114,13 @@ const int ZX_PDF417_DEFAULT_ERROR_CORRECTION_LEVEL = 2;
  * @param margin border around the barcode
  * @return BitMatrix of the input
  */
-- (ZXBitMatrix *)bitMatrixFromBitArray:(NSArray *)input margin:(int)margin {
+- (ZXBitMatrix *)bitMatrixFrombitArray:(NSArray *)input margin:(int)margin {
   // Creates the bitmatrix with extra space for whtespace
   ZXBitMatrix *output = [[ZXBitMatrix alloc] initWithWidth:[(ZXByteArray *)input[0] length] + 2 * margin height:(int)[input count] + 2 * margin];
   [output clear];
-  for (int y = 0, yOutput = output.height - margin - 1; y < [input count]; y++, yOutput--) {
+  for (int y = 0, yOutput = output.height - margin; y < [input count]; y++, yOutput--) {
     for (int x = 0; x < [(ZXByteArray *)input[0] length]; x++) {
-      // Zero is white in the byte matrix
+      // Zero is white in the bytematrix
       if ([(ZXByteArray *)input[y] array][x] == 1) {
         [output setX:x + margin y:yOutput];
       }

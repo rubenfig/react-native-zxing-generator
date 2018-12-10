@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-#import "ZXPDF417DecodedBitStreamParser.h"
 #import "ZXCharacterSetECI.h"
 #import "ZXDecoderResult.h"
 #import "ZXErrors.h"
 #import "ZXIntArray.h"
-#import "ZXDecimal.h"
+#import "ZXPDF417DecodedBitStreamParser.h"
+#import "ZXPDF417ResultMetadata.h"
 
 typedef enum {
   ZXPDF417ModeAlpha = 0,
@@ -42,14 +42,6 @@ const int ZX_PDF417_BEGIN_MACRO_PDF417_OPTIONAL_FIELD = 923;
 const int ZX_PDF417_MACRO_PDF417_TERMINATOR = 922;
 const int ZX_PDF417_MODE_SHIFT_TO_BYTE_COMPACTION_MODE = 913;
 const int ZX_PDF417_MAX_NUMERIC_CODEWORDS = 15;
-
-const int ZX_MACRO_PDF417_OPTIONAL_FIELD_FILE_NAME = 0;
-const int ZX_MACRO_PDF417_OPTIONAL_FIELD_SEGMENT_COUNT = 1;
-const int ZX_MACRO_PDF417_OPTIONAL_FIELD_TIME_STAMP = 2;
-const int ZX_MACRO_PDF417_OPTIONAL_FIELD_SENDER = 3;
-const int ZX_MACRO_PDF417_OPTIONAL_FIELD_ADDRESSEE = 4;
-const int ZX_MACRO_PDF417_OPTIONAL_FIELD_FILE_SIZE = 5;
-const int ZX_MACRO_PDF417_OPTIONAL_FIELD_CHECKSUM = 6;
 
 const int ZX_PDF417_PL = 25;
 const int ZX_PDF417_LL = 27;
@@ -121,7 +113,8 @@ static NSArray *ZX_PDF417_EXP900 = nil;
       }
       break;
     case ZX_PDF417_ECI_CHARSET: {
-      ZXCharacterSetECI *charsetECI = [ZXCharacterSetECI characterSetECIByValue:codewords.array[codeIndex++]];
+      ZXCharacterSetECI *charsetECI =
+        [ZXCharacterSetECI characterSetECIByValue:codewords.array[codeIndex++]];
       encoding = charsetECI.encoding;
       break;
     }
@@ -131,7 +124,7 @@ static NSArray *ZX_PDF417_EXP900 = nil;
       break;
     case ZX_PDF417_ECI_USER_DEFINED:
       // Can't do anything with user ECI; skip its 1 character
-      codeIndex++;
+      codeIndex ++;
       break;
     case ZX_PDF417_BEGIN_MACRO_PDF417_CONTROL_BLOCK:
       codeIndex = [self decodeMacroBlock:codewords codeIndex:codeIndex resultMetadata:resultMetadata];
@@ -184,91 +177,32 @@ static NSArray *ZX_PDF417_EXP900 = nil;
   codeIndex = [self textCompaction:codewords codeIndex:codeIndex result:fileId];
   resultMetadata.fileId = [NSString stringWithString:fileId];
 
-  int optionalFieldsStart = -1;
   if (codewords.array[codeIndex] == ZX_PDF417_BEGIN_MACRO_PDF417_OPTIONAL_FIELD) {
-    optionalFieldsStart = codeIndex + 1;
-  }
+    codeIndex++;
+    NSMutableArray *additionalOptionCodeWords = [NSMutableArray array];
 
-  while (codeIndex < codewords.array[0]) {
-    switch (codewords.array[codeIndex]) {
-      case ZX_PDF417_BEGIN_MACRO_PDF417_OPTIONAL_FIELD:
-        codeIndex++;
-        switch (codewords.array[codeIndex]) {
-          case ZX_MACRO_PDF417_OPTIONAL_FIELD_FILE_NAME:
-          {
-            NSMutableString *fileName = [NSMutableString new];
-            codeIndex = [self textCompaction:codewords codeIndex:codeIndex + 1 result:fileName];
-            resultMetadata.fileName = fileName;
-            break;
-          }
-          case ZX_MACRO_PDF417_OPTIONAL_FIELD_SENDER:
-          {
-            NSMutableString *sender = [NSMutableString new];
-            codeIndex = [self textCompaction:codewords codeIndex:codeIndex + 1 result:sender];
-            resultMetadata.sender = sender;
-            break;
-          }
-          case ZX_MACRO_PDF417_OPTIONAL_FIELD_ADDRESSEE:
-          {
-            NSMutableString *addressee = [NSMutableString new];
-            codeIndex = [self textCompaction:codewords codeIndex:codeIndex + 1 result:addressee];
-            resultMetadata.addressee = addressee;
-            break;
-          }
-          case ZX_MACRO_PDF417_OPTIONAL_FIELD_SEGMENT_COUNT:
-          {
-            NSMutableString *segmentCount = [NSMutableString new];
-            codeIndex = [self numericCompaction:codewords codeIndex:codeIndex + 1 result:segmentCount];
-            resultMetadata.segmentCount = [segmentCount intValue];
-            break;
-          }
-          case ZX_MACRO_PDF417_OPTIONAL_FIELD_TIME_STAMP:
-          {
-            NSMutableString *timestamp = [NSMutableString new];
-            codeIndex = [self numericCompaction:codewords codeIndex:codeIndex + 1 result:timestamp];
-            resultMetadata.timestamp = [timestamp longLongValue];
-            break;
-          }
-          case ZX_MACRO_PDF417_OPTIONAL_FIELD_CHECKSUM:
-          {
-            NSMutableString *checksum = [NSMutableString new];
-            codeIndex = [self numericCompaction:codewords codeIndex:codeIndex + 1 result:checksum];
-            resultMetadata.checksum = [checksum intValue];
-            break;
-          }
-          case ZX_MACRO_PDF417_OPTIONAL_FIELD_FILE_SIZE:
-          {
-            NSMutableString *fileSize = [NSMutableString new];
-            codeIndex = [self numericCompaction:codewords codeIndex:codeIndex + 1 result:fileSize];
-            resultMetadata.fileSize = [fileSize longLongValue];
-            break;
-          }
-          default:
-            [NSException raise:NSInvalidArgumentException format:@"MacroPDF417 invalid format"];
-        }
-        break;
-      case ZX_PDF417_MACRO_PDF417_TERMINATOR:
-        codeIndex++;
-        resultMetadata.lastSegment = YES;
-        break;
-      default:
-        [NSException raise:NSInvalidArgumentException format:@"MacroPDF417 invalid format"];
-    }
-
-    // copy optional fields to additional options
-    if (optionalFieldsStart != -1) {
-      int optionalFieldsLength = codeIndex - optionalFieldsStart;
-      if (resultMetadata.lastSegment) {
-        // do not include terminator
-        optionalFieldsLength--;
-      }
-      NSMutableArray *additionalOptionCodeWords = [NSMutableArray array];
-      for (int i = optionalFieldsStart; i < (optionalFieldsStart + optionalFieldsLength); i++) {
-        int code = codewords.array[i];
+    BOOL end = NO;
+    while ((codeIndex < codewords.array[0]) && !end) {
+      int code = codewords.array[codeIndex++];
+      if (code < ZX_PDF417_TEXT_COMPACTION_MODE_LATCH) {
         [additionalOptionCodeWords addObject:@(code)];
+      } else {
+        switch (code) {
+          case ZX_PDF417_MACRO_PDF417_TERMINATOR:
+            resultMetadata.lastSegment = YES;
+            codeIndex++;
+            end = YES;
+            break;
+          default:
+            return -1;
+        }
       }
-      resultMetadata.optionalData = additionalOptionCodeWords;
     }
+
+    resultMetadata.optionalData = additionalOptionCodeWords;
+  } else if (codewords.array[codeIndex] == ZX_PDF417_MACRO_PDF417_TERMINATOR) {
+    resultMetadata.lastSegment = YES;
+    codeIndex++;
   }
 
   return codeIndex;
@@ -695,13 +629,11 @@ static NSArray *ZX_PDF417_EXP900 = nil;
    Remove leading 1 =>  Result is 000213298174000
  */
 + (NSString *)decodeBase900toBase10:(ZXIntArray *)codewords count:(int)count {
-  ZXDecimal *result = [ZXDecimal decimalWithString:@"0"]; // zero
+  NSDecimalNumber *result = [NSDecimalNumber zero];
   for (int i = 0; i < count; i++) {
-    ZXDecimal *toAdd = [ZXDecimal decimalWithDecimalNumber:ZX_PDF417_EXP900[count - i - 1]];
-    ZXDecimal *multiplyWith = [ZXDecimal decimalWithString:[@(codewords.array[i]) stringValue]];
-    result = [result decimalByAdding:[toAdd decimalByMultiplyingBy:multiplyWith]];
+    result = [result decimalNumberByAdding:[ZX_PDF417_EXP900[count - i - 1] decimalNumberByMultiplyingBy:[NSDecimalNumber decimalNumberWithDecimal:[@(codewords.array[i]) decimalValue]]]];
   }
-  NSString *resultString = result.value;
+  NSString *resultString = [result stringValue];
   if (![resultString hasPrefix:@"1"]) {
     return nil;
   }

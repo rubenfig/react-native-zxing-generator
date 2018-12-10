@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-#import "ZXByteArray.h"
-
 @class ZXAztecDetectorResult, ZXBoolArray, ZXDecoderResult;
 
 /**
@@ -28,6 +26,5 @@
 
 // This method is used for testing the high-level encoder
 + (NSString *)highLevelDecode:(ZXBoolArray *)correctedBits;
-+ (ZXByteArray *)convertBoolArrayToByteArray:(ZXBoolArray *) boolArr;
 
 @end

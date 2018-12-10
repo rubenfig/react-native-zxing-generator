@@ -89,9 +89,6 @@
 /**
  * Image is known to be of one of a few possible formats.
  */
-
-@property (nonatomic, strong) NSDictionary *substitutions;
-
 - (void)addPossibleFormat:(ZXBarcodeFormat)format;
 - (BOOL)containsFormat:(ZXBarcodeFormat)format;
 - (int)numberOfPossibleFormats;

@@ -43,7 +43,7 @@ extern int ZX_AZTEC_SHIFT_TABLE[ZX_AZTEC_SHIFT_TABLE_SIZE][ZX_AZTEC_SHIFT_TABLE_
 - (id)initWithText:(ZXByteArray *)text;
 
 /**
- * @return text represented by this encoder encoded as a ZXBitArray
+ * Convert the text represented by this High Level Encoder into a BitArray.
  */
 - (ZXBitArray *)encode;
 

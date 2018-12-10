@@ -48,7 +48,8 @@
           lastCharSize = [self backtrackOneCharacter:context buffer:buffer removed:removed lastCharSize:lastCharSize];
         }
       }
-      while ((buffer.length % 3) == 1 && (lastCharSize > 3 || available != 1)) {
+      while ((buffer.length % 3) == 1
+             && ((lastCharSize <= 3 && available != 1) || lastCharSize > 3)) {
         lastCharSize = [self backtrackOneCharacter:context buffer:buffer removed:removed lastCharSize:lastCharSize];
       }
       break;
@@ -58,8 +59,7 @@
     if ((count % 3) == 0) {
       int newMode = [ZXDataMatrixHighLevelEncoder lookAheadTest:context.message startpos:context.pos currentMode:[self encodingMode]];
       if (newMode != [self encodingMode]) {
-        // Return to ASCII encodation, which will actually handle latch to new mode
-        [context signalEncoderChange:[ZXDataMatrixHighLevelEncoder asciiEncodation]];
+        [context signalEncoderChange:newMode];
         break;
       }
     }

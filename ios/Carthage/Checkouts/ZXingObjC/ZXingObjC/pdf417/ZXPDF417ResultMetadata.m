@@ -18,14 +18,4 @@
 
 @implementation ZXPDF417ResultMetadata
 
-- (id)init {
-  if (self = [super init]) {
-    _segmentCount = -1;
-    _fileSize = -1;
-    _timestamp = -1;
-    _checksum = -1;
-  }
-  return self;
-}
-
 @end
