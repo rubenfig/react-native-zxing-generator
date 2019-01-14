@@ -118,6 +118,11 @@
     }
     @catch (NSException * e) {
         NSLog(@"Exception: %@", e);
+
+        NSMutableDictionary *event = [NSMutableDictionary dictionaryWithDictionary:@{
+            @"error" : @"render error",
+        }];
+
         if (_onRenderError) _onRenderError(@{});
     }
 }
