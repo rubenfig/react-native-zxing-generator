@@ -1,3 +1,3 @@
-import ZxingBarcode from './Zxing'
+import Zxing from './Zxing'
 
-export default ZxingBarcode
+export default Zxing

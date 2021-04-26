@@ -6,14 +6,14 @@ import {
 } from 'react-native'
 
 
-class ZxingBarcode extends Component {
+class Zxing extends Component {
     render() {
         return (<RNZxing {...this.props} />)
     }
 }
 
 
-ZxingBarcode.propTypes = Object.assign({}, View.propTypes, {
+Zxing.propTypes = Object.assign({}, View.propTypes, {
     text: PropTypes.string.isRequired,
     format: PropTypes.oneOf([
         'AZTEC', 'CODABAR', 'CODE_39', 'CODE_93',
@@ -25,6 +25,6 @@ ZxingBarcode.propTypes = Object.assign({}, View.propTypes, {
     height: PropTypes.number
 })
 
-var RNZxing = requireNativeComponent('Zxing', ZxingBarcode)
+var RNZxing = requireNativeComponent('Zxing', Zxing)
 
-module.exports = ZxingBarcode
+module.exports = Zxing
